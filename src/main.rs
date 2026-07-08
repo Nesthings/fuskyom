@@ -16,8 +16,8 @@ fn main() -> anyhow::Result<()> {
     let start_dir = std::env::args()
         .nth(1)
         .map(PathBuf::from)
-        .or_else(|| dirs::audio_dir())
-        .or_else(|| dirs::home_dir())
+        .or_else(dirs::audio_dir)
+        .or_else(dirs::home_dir)
         .unwrap_or_else(|| PathBuf::from("."));
 
     if !start_dir.is_dir() {
