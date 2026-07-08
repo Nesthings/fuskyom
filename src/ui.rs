@@ -137,9 +137,7 @@ fn draw_now_playing(frame: &mut Frame, area: Rect, app: &mut App) {
         .split(area);
 
     // Left: album art via chafa.
-    let art_block = Block::default()
-        .borders(Borders::ALL)
-        .title(" Album Art ");
+    let art_block = Block::default().borders(Borders::ALL).title(" Album Art ");
     let inner = art_block.inner(cols[0]);
     frame.render_widget(art_block, cols[0]);
 

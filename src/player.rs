@@ -52,9 +52,8 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
             match OutputStream::try_default() {
                 Ok(s) => s,
                 Err(e) => {
-                    let _ = event_tx.send(PlayerEvent::Error(format!(
-                        "cannot open audio device: {e}"
-                    )));
+                    let _ =
+                        event_tx.send(PlayerEvent::Error(format!("cannot open audio device: {e}")));
                     return;
                 }
             };
@@ -62,9 +61,7 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
         let sink = match Sink::try_new(&stream_handle) {
             Ok(s) => s,
             Err(e) => {
-                let _ = event_tx.send(PlayerEvent::Error(format!(
-                    "cannot create audio sink: {e}"
-                )));
+                let _ = event_tx.send(PlayerEvent::Error(format!("cannot create audio sink: {e}")));
                 return;
             }
         };
@@ -78,9 +75,8 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
                     let file = match std::fs::File::open(&path) {
                         Ok(f) => f,
                         Err(e) => {
-                            let _ = event_tx.send(PlayerEvent::Error(format!(
-                                "couldn't open file: {e}"
-                            )));
+                            let _ = event_tx
+                                .send(PlayerEvent::Error(format!("couldn't open file: {e}")));
                             continue;
                         }
                     };
@@ -95,8 +91,8 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
                             let _ = event_tx.send(PlayerEvent::Started { path, duration });
                         }
                         Err(e) => {
-                            let _ = event_tx
-                                .send(PlayerEvent::Error(format!("cannot decode: {e}")));
+                            let _ =
+                                event_tx.send(PlayerEvent::Error(format!("cannot decode: {e}")));
                         }
                     }
                 }
