@@ -7,8 +7,9 @@ use ratatui::widgets::{Block, Borders, Gauge, List, ListItem, ListState, Paragra
 use ratatui::Frame;
 
 use crate::app::{App, PlayState, View};
+use crate::visualizer::OscillatorState;
 
-pub fn draw(frame: &mut Frame, app: &mut App) {
+pub fn draw(frame: &mut Frame, app: &mut App, osc: &OscillatorState) {
     let root = frame.area();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -24,7 +25,7 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
 
     match app.view {
         View::Browser => draw_browser(frame, chunks[1], app),
-        View::NowPlaying => draw_now_playing(frame, chunks[1], app),
+        View::NowPlaying => draw_now_playing(frame, chunks[1], app, osc),
     }
 
     draw_mini_player(frame, chunks[2], app);
@@ -114,7 +115,7 @@ fn draw_search_box(frame: &mut Frame, area: Rect, app: &App) {
     frame.render_widget(box_widget, area);
 }
 
-fn draw_now_playing(frame: &mut Frame, area: Rect, app: &mut App) {
+fn draw_now_playing(frame: &mut Frame, area: Rect, app: &mut App, osc: &OscillatorState) {
     // Terminal character cells are roughly twice as tall as they are wide, so
     // a square album cover needs about `height * 2` columns to fill its box
     // without chafa having to letterbox it (which is what left that big dead
@@ -159,17 +160,45 @@ fn draw_now_playing(frame: &mut Frame, area: Rect, app: &mut App) {
         frame.render_widget(Paragraph::new("Nothing playing"), inner);
     }
 
-    // Right: track info + queue.
+    // Right column: top row = [Track | Visualizer] side by side, bottom = Queue.
+    let top_h = 8u16 + 2; // vizualizer height + borders; track info fits inside too
     let right = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(6), Constraint::Min(3)])
+        .constraints([
+            Constraint::Length(top_h), // top row (track + visualizer)
+            Constraint::Min(3),        // queue
+        ])
         .split(cols[1]);
+
+    // Top row: Track info on the left half, Visualizer on the right half.
+    //track 60% of the screen
+    //visualizer 40% of the screen
+    // ---------------------------------------------
+    // |                      ||                   |
+    // |        Track         ||    Visualizer     |
+    // |                      ||                   |
+    // ---------------------------------------------
+    let show_viz = right[0].width >= 70;
+    let top_constraints = if show_viz {
+        vec![Constraint::Percentage(60), Constraint::Percentage(40)]
+    } else {
+        vec![Constraint::Percentage(100)]
+    };
+
+    let top_row = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(top_constraints)
+        .split(right[0]);
 
     let info_lines = track_info_lines(app);
     frame.render_widget(
         Paragraph::new(info_lines).block(Block::default().borders(Borders::ALL).title(" Track ")),
-        right[0],
+        top_row[0],
     );
+
+    if show_viz {
+        osc.draw(frame, top_row[1]);
+    }
 
     let queue_items: Vec<ListItem> = app
         .queue
