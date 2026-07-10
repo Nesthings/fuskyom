@@ -41,7 +41,8 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
             match OutputStream::try_default() {
                 Ok(s) => s,
                 Err(e) => {
-                    let _ = event_tx.send(PlayerEvent::Error(format!("cannot open audio device: {e}")));
+                    let _ =
+                        event_tx.send(PlayerEvent::Error(format!("cannot open audio device: {e}")));
                     return;
                 }
             };
@@ -63,13 +64,14 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
                     let file = match std::fs::File::open(&path) {
                         Ok(f) => f,
                         Err(e) => {
-                            let _ = event_tx.send(PlayerEvent::Error(format!("couldn't open file: {e}")));
+                            let _ = event_tx
+                                .send(PlayerEvent::Error(format!("couldn't open file: {e}")));
                             // Si el archivo no existe o no se puede abrir, saltamos al siguiente
                             let _ = event_tx.send(PlayerEvent::Finished);
                             continue;
                         }
                     };
-                    
+
                     match Decoder::new(std::io::BufReader::new(file)) {
                         Ok(source) => {
                             sink.stop();
@@ -81,9 +83,10 @@ pub fn spawn(event_tx: Sender<PlayerEvent>) -> Sender<PlayerCommand> {
                             let _ = event_tx.send(PlayerEvent::Started { path, duration });
                         }
                         Err(e) => {
-                            // MANEJO DE ERRORES: Si la canción está corrupta, reportamos 
+                            // MANEJO DE ERRORES: Si la canción está corrupta, reportamos
                             // y enviamos Finished para que el randomizador dispare la siguiente
-                            let _ = event_tx.send(PlayerEvent::Error(format!("Skip corrupt track: {e}")));
+                            let _ = event_tx
+                                .send(PlayerEvent::Error(format!("Skip corrupt track: {e}")));
                             let _ = event_tx.send(PlayerEvent::Finished);
                         }
                     }
