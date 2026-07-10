@@ -27,7 +27,34 @@ cover directly in the terminal with colored Unicode/ANSI blocks.
 
 <img width="937" height="519" alt="image" src="https://github.com/user-attachments/assets/cbe284b1-ed8f-47f3-a405-ef47d1d203ca" />
 
-  
+  ## What's new
+
+- **Complete Windows support** — See below instructions to install in windows
+- **Songs randomizer** — You can switch between album, global or disable the randomization
+- **Settings menu** (`9`) — a dedicated panel-based screen for everything
+  configurable: default music directories, color themes, and the wave
+  visualizer, instead of digging through flags or config files by hand.
+- **Multiple default music directories** — configure one or more folders once
+  from Settings, and fuskyom launches straight into your library from then
+  on, no need to pass a path every time.
+  Note: if you initialize the app without passing the path it will choose your
+  default system path
+- **The browser remembers where you were** — going up/down between
+  directories, or hopping over to Now Playing/Settings and back, no longer
+  resets you to the top of the list.
+- **Wider format support** — M4A, WAV, AIFF/AIF joined MP3/FLAC/OGG.
+- **Wave visualizer** — toggle on/off from Settings, switch between Bar Chart
+  and Sparkline styles, and it automatically matches whichever color theme is
+  active.
+- **5 color themes** — Default, Dracula, Gruvbox, Nord, and Neon, switchable
+  live from Settings.
+
+<img width="1270" height="757" alt="image" src="https://github.com/user-attachments/assets/5d808e0e-67f2-442a-99ac-3b0417496531" />
+
+<img width="1270" height="757" alt="image" src="https://github.com/user-attachments/assets/6c2da340-a877-4f65-a5a7-36f0107df653" />
+
+<img width="1270" height="757" alt="image" src="https://github.com/user-attachments/assets/52fb33c7-7023-43d5-9eb8-1defc6b34d79" />
+
 
 
 ## Architecture
@@ -105,13 +132,36 @@ milliseconds).
 
 ### Windows
 
-Not officially tested. `rodio`/`cpal` support WASAPI, so audio should work,
-but you'll need `chafa` available on your PATH (e.g. via
-[scoop](https://scoop.sh) or building it from source) — chafa doesn't
-publish official Windows binaries.
+**Install Rust:**
+```powershell
+winget install Rustlang.Rustup
+```
+(or download rustup-init.exe from https://rustup.rs)
 
+**Install chafa:**
+```powershell
+winget install hpjansson.Chafa
+```
+alternative: scoop install chafa
 
-## Install without compiling (latest Release binary)
+**C++ compilation tools (required by Rust linker in Windows)**
+```powershell
+winget install Microsoft.VisualStudio.2022.BuildTools
+```
+**during the instalaton, mark the following workload: "Desktop development with C++"**
+
+## Compile and run
+
+```powershell
+git clone https://github.com/Nesthings/fuskyom.git
+cd fuskyom
+cargo build --release
+.\target\release\fuskyom.exe "C:\Users\YourUser\Music"
+```
+**Recomended terminal: Windows Terminal (comes as default in Windows 11, or you can download through Microsoft Store)**
+cmd.exe classic and old PowerShell not always renderice correctly Unicode/colors.
+
+## Install on Linux without compiling (latest Release binary)
 
 Every time a `vX.Y.Z` tag is published, GitHub Actions builds ready-to-run
 binaries for Linux and macOS and uploads them to the repo's **Releases**
@@ -136,7 +186,7 @@ cargo build --release
 
 Supported formats: **MP3, FLAC, OGG/Vorbis**.
 
-## Keybindings
+## Keybindings (Browser)
 
 | Key               | Action                                       |
 |-------------------|-----------------------------------------------|
@@ -145,10 +195,18 @@ Supported formats: **MP3, FLAC, OGG/Vorbis**.
 | `/`               | manual search tool                            |
 | `Enter`           | enter folder / play file                      |
 | `Backspace`/`h`   | go up a directory (Browser view)              |
+| `/`               | open/close filter-by-name search box          |
+| `q`               | quit fuskyom                                  |
+
+## Keybindings (player)
+
+| Key               | Action                                       |
+|-------------------|-----------------------------------------------|
 | `Space`           | pause / resume                                |
 | `s`               | stop                                          |
 | `n`               | next track in queue                           |
 | `p`               | previous track                                |
+| `d`               | toggle between randomizer options             |
 | `+` / `-`         | volume up / down                              |
 | `,` / `.`         | seek back / forward 5s                        |
 | `r`               | toggle repeat queue                           |
@@ -165,6 +223,22 @@ playback commands while you're filtering.
 When you play a file, `fuskyom` builds the queue from every audio file in
 that same folder starting at the track you picked — just like cmus, so
 `n`/`p` walk through the whole album.
+
+
+## Keybindings (settings menu)
+
+| Key               | Action                                       |
+|-------------------|-----------------------------------------------|
+| `j` / `↓`         | move selection down                           |
+| `k` / `↑`         | move selection up                             |
+| `Enter`           | toggle between options                        |
+| `a`               | add new path                                  |
+| `d`               | remove path                                   |
+| `r`               | refresh player                                |
+| `q`               | quit fuskyom                                  |
+
+make to be pointing at the right option at the settings menu
+
 
 ## Publishing a new Release
 
