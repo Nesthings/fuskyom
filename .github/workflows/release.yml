@@ -17,9 +17,15 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name: fuskyom-linux-x86_64
+            exe_suffix: ""
           - os: macos-latest
             target: aarch64-apple-darwin
             asset_name: fuskyom-macos-arm64
+            exe_suffix: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            asset_name: fuskyom-windows-x86_64
+            exe_suffix: ".exe"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -47,15 +53,23 @@ jobs:
           set -euo pipefail
           staging="${{ matrix.asset_name }}"
           mkdir -p "$staging"
-          cp "target/${{ matrix.target }}/release/${BIN_NAME}" "$staging/"
+          cp "target/${{ matrix.target }}/release/${BIN_NAME}${{ matrix.exe_suffix }}" "$staging/"
           cp README.md LICENSE "$staging/"
-          tar czf "${staging}.tar.gz" "$staging"
+          
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            # Usamos zip de PowerShell que siempre está disponible en Windows
+            powershell Compress-Archive -Path "$staging" -DestinationPath "${staging}.zip"
+          else
+            tar czf "${staging}.tar.gz" "$staging"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset_name }}
-          path: ${{ matrix.asset_name }}.tar.gz
+          path: |
+            ${{ matrix.asset_name }}.tar.gz
+            ${{ matrix.asset_name }}.zip
 
   release:
     needs: build
@@ -69,5 +83,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.tar.gz
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
           generate_release_notes: true
