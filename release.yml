@@ -55,13 +55,20 @@ jobs:
           mkdir -p "$staging"
           cp "target/${{ matrix.target }}/release/${BIN_NAME}${{ matrix.exe_suffix }}" "$staging/"
           cp README.md LICENSE "$staging/"
-          tar czf "${staging}.tar.gz" "$staging"
+          
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            7z a "${staging}.zip" "$staging"
+          else
+            tar czf "${staging}.tar.gz" "$staging"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset_name }}
-          path: ${{ matrix.asset_name }}.tar.gz
+          path: |
+            ${{ matrix.asset_name }}.tar.gz
+            ${{ matrix.asset_name }}.zip
 
   release:
     needs: build
@@ -75,5 +82,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.tar.gz
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
           generate_release_notes: true
